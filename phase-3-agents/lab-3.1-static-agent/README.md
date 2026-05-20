@@ -1,10 +1,8 @@
-# Lab 3.1 — Static Agent Setup
+# Lab 3.1 — Static Agent Setup   
 
-> **Phase:** 3 — Jenkins Agents + Distributed Builds
-> **Lab:** 3.1 of 4
-> **Status:** ⏳ In Progress
-> **Started:** <!-- Add date -->
-> **Completed:** <!-- Add date -->
+> **Phase:** 3 — Jenkins Agents + Distributed Builds   
+> **Lab:** 3.1 of 4   
+> **Status:** ✅ Completed   
 
 ---
 
@@ -96,8 +94,18 @@ phase-3-agents/
     ├── setup-notes.md         ← Every command you ran (fill as you go)
     ├── Jenkinsfile            ← Pipeline that targets the agent by label
     └── screenshots/           ← Agent connected, build console log proof
-        ├── agent-connected.png
-        └── build-on-agent-proof.png
+        ├── break-it-1-queue-stuck.png
+        └── break-it-1-no-node-error.png
+        └── break-it-1-build-passed-after-fix.png
+        └── break-it-2-agent-red-x.png
+        └── break-it-2-queue-blocked.png
+        └── break-it-2-agent-log-error.png
+        └── break-it-2-agent-fix.png
+        └── exercise-3-docker-ps-container-ids.png
+        └── exercise-3-console-log-hostname-proof.png
+        └── exercise-3-nodes-agent-connected.png
+        
+
 ```
 
 ---
@@ -393,34 +401,34 @@ Exercise 3 — Verify it really runs on agent
 
 ```
 Setup
-[ ] jenkins-net Docker network created
-[ ] SSH key pair generated (jenkins-agent and jenkins-agent.pub)
-[ ] Agent container running: docker ps shows jenkins-agent-01
-[ ] Both containers on jenkins-net: docker network inspect jenkins-net
+[x] jenkins-net Docker network created
+[x] SSH key pair generated (jenkins-agent and jenkins-agent.pub)
+[x] Agent container running: docker ps shows jenkins-agent-01
+[x] Both containers on jenkins-net: docker network inspect jenkins-net
 
 Jenkins Config
-[ ] SSH private key added to Jenkins credentials (ID: jenkins-agent-ssh-key)
-[ ] Node agent-01 registered with label: linux-agent
-[ ] Node shows connected in Manage Jenkins → Nodes (no red X)
-[ ] Agent log shows: "Agent successfully connected"
+[x] SSH private key added to Jenkins credentials (ID: jenkins-agent-ssh-key)
+[x] Node agent-01 registered with label: linux-agent
+[x] Node shows connected in Manage Jenkins → Nodes (no red X)
+[x] Agent log shows: "Agent successfully connected"
 
 Pipeline
-[ ] Jenkinsfile committed to repo under lab-3.1-static-agent/
-[ ] Pipeline job created pointing to that Jenkinsfile
-[ ] Build triggered and passed
-[ ] Console log proves build ran on agent-01 (not controller)
-[ ] NODE_NAME = agent-01 visible in build output
+[x] Jenkinsfile committed to repo under lab-3.1-static-agent/
+[x] Pipeline job created pointing to that Jenkinsfile
+[x] Build triggered and passed
+[x] Console log proves build ran on agent-01 (not controller)
+[x] NODE_NAME = agent-01 visible in build output
 
 Break-It Exercises
-[ ] Wrong label exercise done — documented what happened
-[ ] Agent offline exercise done — documented recovery behaviour
-[ ] Screenshot saved proving hostname differs from controller
+[x] Wrong label exercise done — documented what happened
+[x] Agent offline exercise done — documented recovery behaviour
+[x] Screenshot saved proving hostname differs from controller
 
 Documentation
-[ ] setup-notes.md filled with every command you ran
-[ ] README status updated to ✅ Completed
-[ ] Phase 3 progress tracker updated
-[ ] Screenshots added to screenshots/ folder
+[x] setup-notes.md filled with every command you ran
+[x] README status updated to ✅ Completed
+[x] Phase 3 progress tracker updated
+[x] Screenshots added to screenshots/ folder
 ```
 
 ---
@@ -459,7 +467,12 @@ After completing this lab, you can answer:
 
 ## 📝 My Learnings — Lab 3.1 Retrospective
 
-> ✏️ Fill this section after completing the lab.
+> Jenkins detects agent loss automatically
+> Build queues silently — does not fail — waits for agent to return
+> Agent reconnects automatically once container is back online
+> No manual intervention needed in Jenkins UI after restart
+> In production this means: static agents do not self-heal Someone or something (systemd, Kubernetes, auto-scaling) must restart the agent — Jenkins only manages the job queue, not the agent infrastructure
+> This is exactly why dynamic agents (Lab 3.2) are preferred — no persistent agent means nothing to recover from
 
 ### What I Built
 
