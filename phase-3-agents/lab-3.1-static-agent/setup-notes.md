@@ -61,3 +61,28 @@
 - break-it-2-agent-log-error.png
 - break-it-2-agent-fix.png
 - break-it-2-build-resumed.png
+
+## Break-It Exercise 3 — Verify Build Runs on Agent
+
+### Container IDs Captured
+- Controller: 917dfa1e2026
+- Agent:      0d67efb5ac71
+
+### Console Log Evidence
+- First line: "Running on jenkins-agent-ssh-connection in /home/jenkins/agent/workspace"
+- Hostname output: 0d67efb5ac71  ← matches agent, NOT controller
+- NODE_NAME: jenkins-agent-ssh-connection
+- whoami: jenkins
+
+### Conclusion
+Hostname in console log = agent container ID
+Hostname in console log ≠ controller container ID
+Build is confirmed running on agent — not controller.
+
+### Key Takeaway
+Always verify NODE_NAME and hostname in console log
+after setting up a new agent. Never assume agent { label }
+is working — prove it with evidence.
+Screenshots saved as proof in screenshots/ folder.
+
+
