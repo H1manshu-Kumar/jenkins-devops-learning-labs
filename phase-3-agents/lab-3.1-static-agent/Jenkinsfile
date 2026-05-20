@@ -1,6 +1,6 @@
 pipeline {
     // Target agent by label — NOT 'agent any' which could run on controller
-    agent { label 'linux-agent' }
+    agent { label 'wrong-label' }
 
     stages {
         stage('Verify - Running on Agent') {
