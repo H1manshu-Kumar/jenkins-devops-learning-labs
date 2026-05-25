@@ -30,8 +30,8 @@ pipeline {
 
         stage('Debug - List Files') {
             steps {
-                sh 'ls -la'
-                sh 'ls -la tests/ || echo "tests directory not found"'
+                sh 'ls -la phase-3-agents/lab-3.2-docker-agent/'
+                sh 'ls -la phase-3-agents/lab-3.2-docker-agent/tests/'
             }
         }
 
@@ -44,8 +44,8 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                // Run pytest and output JUnit XML — Jenkins reads this format natively
                 sh '''
+                    cd phase-3-agents/lab-3.2-docker-agent
                     pytest tests/test_sample.py \
                         --junit-xml=results/test-results.xml \
                         --verbose \
@@ -65,10 +65,7 @@ pipeline {
 
     post {
         always {
-            // Publish test results BEFORE container is destroyed
-            // Jenkins reads the XML and stores results on controller
-            junit 'results/test-results.xml'
-
+            junit 'phase-3-agents/lab-3.2-docker-agent/results/test-results.xml'
             echo "Build ${BUILD_NUMBER} complete — container will now be destroyed"
         }
         success {
