@@ -4,7 +4,6 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            args '-e HOME=/tmp -e PATH=/tmp/.local/bin:$PATH'
         }
     }
 
