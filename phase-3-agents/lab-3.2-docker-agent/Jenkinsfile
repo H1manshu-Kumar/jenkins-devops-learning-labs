@@ -4,7 +4,7 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-	    args '-v /var/run/docker.sock:/var/run/docker.sock -e HOME=/tmp -e PATH=/tmp/.local/bin:'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
@@ -37,7 +37,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install --user pytest --quiet'
+                sh 'pip install pytest --quiet'
                 sh 'pip show pytest | grep Version'
             }
         }
