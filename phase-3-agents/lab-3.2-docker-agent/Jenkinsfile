@@ -1,0 +1,79 @@
+pipeline {
+    // No static agent — Docker spins up a fresh container per build
+    // python:3.11-slim is pulled from Docker Hub if not cached locally
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -e HOME=/tmp'
+        }
+    }
+
+    options {
+        // Keep last 5 builds only — good practice
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        // Fail build if it runs longer than 10 minutes
+        timeout(time: 10, unit: 'MINUTES')
+    }
+
+    stages {
+        stage('Verify - Docker Agent Environment') {
+            steps {
+                // Prove WHERE and WHAT this build is running on
+                sh 'echo "Hostname: $(hostname)"'
+                sh 'echo "Whoami: $(whoami)"'
+                sh 'echo "Python version: $(python3 --version)"'
+                sh 'echo "Working dir: $(pwd)"'
+                sh 'echo "Build number: ${BUILD_NUMBER}"'
+                sh 'echo "Node Name: ${NODE_NAME}"'
+            }
+        }
+
+        stage('Debug - List Files') {
+            steps {
+                sh 'ls -la phase-3-agents/lab-3.2-docker-agent/'
+                sh 'ls -la phase-3-agents/lab-3.2-docker-agent/tests/'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install --user pytest --quiet'
+                sh 'pip show pytest | grep Version'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    export PATH=/tmp/.local/bin:$PATH
+                    cd phase-3-agents/lab-3.2-docker-agent
+                    pytest tests/test_sample.py \
+                        --junit-xml=results/test-results.xml \
+                        --verbose \
+                        -p no:cacheprovider
+                '''
+            }
+        }
+
+        stage('Verify - Container Will Be Destroyed') {
+            steps {
+                // Print container ID — you will confirm this is gone after build
+                sh 'echo "Container ID: $(hostname)"'
+                sh 'echo "This container will not exist after this build completes"'
+            }
+        }
+    }
+
+    post {
+        always {
+            junit 'phase-3-agents/lab-3.2-docker-agent/results/test-results.xml'
+            echo "Build ${BUILD_NUMBER} complete — container will now be destroyed"
+        }
+        success {
+            echo "SUCCESS — All tests passed inside Docker agent"
+        }
+        failure {
+            echo "FAILURE — Check console log for errors inside container"
+        }
+    }
+}
