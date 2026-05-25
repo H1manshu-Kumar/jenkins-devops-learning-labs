@@ -28,6 +28,13 @@ pipeline {
             }
         }
 
+        stage('Debug - List Files') {
+            steps {
+                sh 'ls -la'
+                sh 'ls -la tests/ || echo "tests directory not found"'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh 'pip install --user pytest --quiet'
