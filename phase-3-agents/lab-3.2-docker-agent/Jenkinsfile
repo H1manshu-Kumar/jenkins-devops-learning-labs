@@ -3,7 +3,7 @@ pipeline {
     // python:3.11-slim is pulled from Docker Hub if not cached locally
     agent {
         docker {
-            image 'python:3.11-slim'
+            image 'python:nonexistent-tag'
             args '-v /var/run/docker.sock:/var/run/docker.sock -e HOME=/tmp -e PATH=/tmp/.local/bin:$PATH'
         }
     }
