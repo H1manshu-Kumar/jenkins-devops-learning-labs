@@ -45,6 +45,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
+                    export PATH=/tmp/.local/bin:$PATH
                     cd phase-3-agents/lab-3.2-docker-agent
                     pytest tests/test_sample.py \
                         --junit-xml=results/test-results.xml \
