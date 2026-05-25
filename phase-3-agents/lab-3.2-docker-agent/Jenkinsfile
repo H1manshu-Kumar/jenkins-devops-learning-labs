@@ -1,0 +1,76 @@
+pipeline {
+    // No static agent — Docker spins up a fresh container per build
+    // python:3.11-slim is pulled from Docker Hub if not cached locally
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            // Mount Docker socket so container can call Docker if needed
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+
+    options {
+        // Keep last 5 builds only — good practice
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        // Fail build if it runs longer than 10 minutes
+        timeout(time: 10, unit: 'MINUTES')
+    }
+
+    stages {
+        stage('Verify - Docker Agent Environment') {
+            steps {
+                // Prove WHERE and WHAT this build is running on
+                sh 'echo "Hostname: $(hostname)"'
+                sh 'echo "Whoami: $(whoami)"'
+                sh 'echo "Python version: $(python3 --version)"'
+                sh 'echo "Working dir: $(pwd)"'
+                sh 'echo "Build number: ${BUILD_NUMBER}"'
+                sh 'echo "Node Name: ${NODE_NAME}"'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                // pip install runs fresh every build — clean environment
+                sh 'pip install pytest --quiet'
+                sh 'pip show pytest | grep Version'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Run pytest and output JUnit XML — Jenkins reads this format natively
+                sh '''
+                    pytest tests/test_sample.py \
+                        --junit-xml=results/test-results.xml \
+                        --verbose \
+                        -p no:cacheprovider
+                '''
+            }
+        }
+
+        stage('Verify - Container Will Be Destroyed') {
+            steps {
+                // Print container ID — you will confirm this is gone after build
+                sh 'echo "Container ID: $(hostname)"'
+                sh 'echo "This container will not exist after this build completes"'
+            }
+        }
+    }
+
+    post {
+        always {
+            // Publish test results BEFORE container is destroyed
+            // Jenkins reads the XML and stores results on controller
+            junit 'results/test-results.xml'
+
+            echo "Build ${BUILD_NUMBER} complete — container will now be destroyed"
+        }
+        success {
+            echo "SUCCESS — All tests passed inside Docker agent"
+        }
+        failure {
+            echo "FAILURE — Check console log for errors inside container"
+        }
+    }
+}
