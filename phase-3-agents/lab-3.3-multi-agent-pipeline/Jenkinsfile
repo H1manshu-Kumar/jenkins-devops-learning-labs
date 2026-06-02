@@ -1,0 +1,114 @@
+pipeline {
+  agent none
+  
+  stages {
+    stage('Build - Linux Agent') {
+      agent {
+        label 'linux-agent'
+      }
+      steps {
+        echo "Running on Linux Agent"
+        sh '''
+        mkdir -p build
+        echo "Application Build Artifact" > build/app.txt
+        echo "Hostname: $(hostname)"
+        echo "Node Name: ${NODE_NAME}"
+        cat build/app.txt
+        '''
+        stash name: 'build-artifact',
+          includes: 'build/**'
+      }
+
+    }
+
+    stage('Validate - Docker agent') {
+      agent {
+        docker {
+          image 'python:3.11-slim'
+          reuseNode true
+        }
+      }
+      steps {
+        unstash 'build-artifact'
+
+        sh '''
+        mkdir -p results
+
+        pip install --target=/tmp/.local pytest
+        export PATH=/tmp/.local/bin:$PATH
+        export PYTHONPATH=/tmp/.local:$PYTHONPATH
+        ls -la build/
+        cat build/app.txt
+        '''
+        writeFile file: 'tests/test_artifact.py', text: '''
+from pathlib import Path
+
+def test_artifact_exists():
+    assert Path("build/app.txt").exists()
+
+def test_artifact_content():
+    content = Path("build/app.txt").read_text()
+    assert "Application Build Artifact" in content
+'''
+
+        sh '''
+        export PATH=/tmp/.local/bin:$PATH
+        export PYTHONPATH=/tmp/.local:$PYTHONPATH
+
+        pytest tests/test_artifact.py \
+          --junit-xml=results/test-results.xml \
+          -v
+        '''
+
+        stash name: 'test-results',
+          includes: 'results/**'
+
+      }
+    }
+
+    stage('Archive - Linux Agent') {
+
+      agent {
+        label 'linux-agent'
+      }
+      steps {
+        unstash 'test-results'
+        sh '''
+        echo "Results received from Docker Agent"
+        ls -la results/
+        '''
+      }
+    }
+  }
+  
+  post {
+        always {
+            node('linux-agent') {
+                script {
+                    try {
+                        unstash 'test-results'
+                        junit 'results/test-results.xml'
+                    } catch (Exception e) {
+                        echo "No test results to publish: ${e.message}"
+                    }
+                    
+                    try {
+                        unstash 'build-artifact'
+                        archiveArtifacts artifacts: 'build/**', fingerprint: true
+                    } catch (Exception e) {
+                        echo "No build artifacts to archive: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        success {
+            echo 'SUCCESS - Multi-Agent Pipeline Completed'
+        }
+
+        failure {
+            echo 'FAILURE - Check Pipeline Logs'
+        }
+  }
+
+}
