@@ -1,100 +1,137 @@
 pipeline {
-  agent none
-  
-  stages {
-    stage('Build - Linux Agent') {
-      agent {
-        label 'linux-agent'
-      }
-      steps {
-        echo "Running on Linux Agent"
-        sh '''
-        mkdir -p build
-        echo "Application Build Artifact" > build/app.txt
-        echo "Hostname: $(hostname)"
-        echo "Node Name: ${NODE_NAME}"
-        cat build/app.txt
-        '''
-        stash name: 'build-artifact',
-          includes: 'build/**'
-      }
 
+    agent none
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        timeout(time: 15, unit: 'MINUTES')
     }
 
-    stage('Validate - Docker agent') {
-      agent {
-        docker {
-          image 'python:3.11-slim'
-          reuseNode true
+    stages {
+
+        stage('Build Artifact - Linux Agent') {
+
+            agent {
+                label 'linux-agent'
+            }
+
+            steps {
+
+                echo "Running on Linux Agent"
+
+                sh '''
+                    mkdir -p build
+
+                    echo "Application Build Artifact" > build/app.txt
+
+                    echo "Hostname: $(hostname)"
+                    echo "Node Name: ${NODE_NAME}"
+
+                    cat build/app.txt
+                '''
+
+                stash(
+                    name: 'build-artifact',
+                    includes: 'build/**'
+                )
+            }
         }
-      }
-      steps {
-        unstash 'build-artifact'
 
-        sh '''
-        mkdir -p results
+        stage('Validate Artifact - Docker Agent') {
 
-        pip install --target=/tmp/.local pytest
-        export PATH=/tmp/.local/bin:$PATH
-        export PYTHONPATH=/tmp/.local:$PYTHONPATH
-        ls -la build/
-        cat build/app.txt
-        '''
-        writeFile file: 'tests/test_artifact.py', text: '''
-from pathlib import Path
+            agent {
+                docker {
+                    image 'python:3.11-slim'
+                    reuseNode true
+                }
+            }
 
-def test_artifact_exists():
-    assert Path("build/app.txt").exists()
+            steps {
 
-def test_artifact_content():
-    content = Path("build/app.txt").read_text()
-    assert "Application Build Artifact" in content
-'''
+                unstash 'build-artifact'
 
-        sh '''
-        export PATH=/tmp/.local/bin:$PATH
-        export PYTHONPATH=/tmp/.local:$PYTHONPATH
+                sh '''
+                    mkdir -p results
 
-        pytest tests/test_artifact.py \
-          --junit-xml=results/test-results.xml \
-          -v
-        '''
+                    echo "Docker Hostname: $(hostname)"
+                    echo "Docker User: $(whoami)"
+                    echo "Node Name: ${NODE_NAME}"
 
-        stash name: 'test-results',
-          includes: 'results/**'
+                    pip install --target=/tmp/.local pytest
 
-      }
+                    export PATH=/tmp/.local/bin:$PATH
+                    export PYTHONPATH=/tmp/.local:$PYTHONPATH
+
+                    echo "Build directory contents:"
+                    ls -la build/
+
+                    echo "Artifact content:"
+                    cat build/app.txt
+                '''
+
+                sh '''
+                    export PATH=/tmp/.local/bin:$PATH
+                    export PYTHONPATH=/tmp/.local:$PYTHONPATH
+
+                    pytest tests/test_artifact.py \
+                      --junit-xml=results/test-results.xml \
+                      -v
+                '''
+
+                sh '''
+                    echo "JUnit files:"
+                    ls -la results/
+                '''
+
+                stash(
+                    name: 'test-results',
+                    includes: 'results/**'
+                )
+            }
+        }
+
+        stage('Archive Results - Linux Agent') {
+
+            agent {
+                label 'linux-agent'
+            }
+
+            steps {
+
+                unstash 'test-results'
+
+                sh '''
+                    echo "Results received from Docker Agent"
+
+                    ls -la results/
+                '''
+            }
+        }
     }
 
-    stage('Archive - Linux Agent') {
+    post {
 
-      agent {
-        label 'linux-agent'
-      }
-      steps {
-        unstash 'test-results'
-        sh '''
-        echo "Results received from Docker Agent"
-        ls -la results/
-        '''
-      }
-    }
-  }
-  
-  post {
         always {
+
             node('linux-agent') {
+
                 script {
+
                     try {
                         unstash 'test-results'
+
                         junit 'results/test-results.xml'
                     } catch (Exception e) {
                         echo "No test results to publish: ${e.message}"
                     }
-                    
+
                     try {
                         unstash 'build-artifact'
-                        archiveArtifacts artifacts: 'build/**', fingerprint: true
+
+                        archiveArtifacts(
+                            artifacts: 'build/**',
+                            fingerprint: true
+                        )
                     } catch (Exception e) {
                         echo "No build artifacts to archive: ${e.message}"
                     }
@@ -109,6 +146,5 @@ def test_artifact_content():
         failure {
             echo 'FAILURE - Check Pipeline Logs'
         }
-  }
-
+    }
 }
