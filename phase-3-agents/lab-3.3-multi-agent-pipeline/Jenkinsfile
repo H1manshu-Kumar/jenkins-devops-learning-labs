@@ -30,7 +30,10 @@ pipeline {
                     cat build/app.txt
                 '''
 
-                // stash removed intentionally
+               stash(
+    			name: 'build-artifact',
+    			includes: 'build/**'
+		)
             }
         }
 
