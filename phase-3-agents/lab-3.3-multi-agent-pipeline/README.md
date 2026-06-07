@@ -2,17 +2,17 @@
 
 <div align="center">
 
-![Jenkins](https://img.shields.io/badge/Jenkins-Multi--Agent-red?style=for-the-badge\&logo=jenkins)
-![Docker](https://img.shields.io/badge/Docker-Ephemeral%20Agent-blue?style=for-the-badge\&logo=docker)
-![Linux](https://img.shields.io/badge/Linux-Static%20Agent-black?style=for-the-badge\&logo=linux)
-![Pytest](https://img.shields.io/badge/Pytest-Validation-green?style=for-the-badge\&logo=pytest)
+![Jenkins](https://img.shields.io/badge/Jenkins-Multi--Agent-red?style=for-the-badge&logo=jenkins)
+![Docker](https://img.shields.io/badge/Docker-Ephemeral%20Agent-blue?style=for-the-badge&logo=docker)
+![Linux](https://img.shields.io/badge/Linux-Static%20Agent-black?style=for-the-badge&logo=linux)
+![Pytest](https://img.shields.io/badge/Pytest-Validation-green?style=for-the-badge&logo=pytest)
 ![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
 
 </div>
 
 ---
 
-# 📌 Overview
+## 📌 Overview
 
 In previous labs, builds executed on a single agent.
 
@@ -20,7 +20,7 @@ In this lab, I built a **distributed Jenkins pipeline** where different stages e
 
 The pipeline uses:
 
-* A Linux static agent for build preparation
+* A Linux static agent for build preparation and archival
 * An ephemeral Docker agent for validation and testing
 * Artifact transfer using Jenkins `stash` and `unstash`
 * Controller-safe execution using `agent none`
@@ -29,31 +29,23 @@ This simulates how modern enterprise Jenkins environments distribute workloads a
 
 ---
 
-# 🎯 Learning Objectives
+## 🎯 Learning Objectives
 
 By completing this lab, I learned how to:
 
-✅ Use multiple agents within a single pipeline
-
-✅ Route stages to specific agents using labels
-
-✅ Use `agent none` for controller-safe execution
-
-✅ Transfer files between agents using `stash` and `unstash`
-
-✅ Understand workspace isolation across agents
-
-✅ Execute tests inside ephemeral Docker containers
-
-✅ Publish JUnit reports from distributed builds
-
-✅ Troubleshoot agent scheduling issues
-
-✅ Understand how large Jenkins environments scale build execution
+✅ Use multiple agents within a single pipeline  
+✅ Route stages to specific agents using labels  
+✅ Use `agent none` for controller-safe execution  
+✅ Transfer files between agents using `stash` and `unstash`  
+✅ Understand workspace isolation across agents  
+✅ Execute tests inside ephemeral Docker containers  
+✅ Publish JUnit reports from distributed builds  
+✅ Troubleshoot agent scheduling issues  
+✅ Understand how large Jenkins environments scale build execution  
 
 ---
 
-# 🧠 Core Concept — Distributed Build Execution
+## 🧠 Core Concept — Distributed Build Execution
 
 A Jenkins Controller should coordinate work.
 
@@ -84,7 +76,7 @@ Modern Jenkins environments distribute execution across multiple agents.
 
 ---
 
-# 🏗️ Architecture Overview
+## 🏗️ Architecture Overview
 
 ```text
 ┌─────────────────────────────────────────────┐
@@ -116,7 +108,7 @@ Modern Jenkins environments distribute execution across multiple agents.
 
 ---
 
-# 🧪 QA → DevOps Mapping
+## 🧪 QA → DevOps Mapping
 
 | QA Mindset               | DevOps Equivalent              |
 | ------------------------ | ------------------------------ |
@@ -130,7 +122,7 @@ Modern Jenkins environments distribute execution across multiple agents.
 
 ---
 
-# ⚙️ Tech Stack Used
+## ⚙️ Tech Stack Used
 
 | Tool        | Purpose                    |
 | ----------- | -------------------------- |
@@ -144,73 +136,70 @@ Modern Jenkins environments distribute execution across multiple agents.
 
 ---
 
-# 📂 Project Structure
+## 📂 Project Structure
 
 ```text
-phase-3-agents/
-└── lab-3.3-multi-agent/
-    ├── README.md
-    ├── Jenkinsfile
-    ├── setup-notes.md
-    │
-    ├── build/
-    │   └── app.txt
-    │
-    ├── results/
-    │   └── test-results.xml
-    │
-    ├── tests/
-    │   └── test_artifact.py
-    │
-    └── screenshots/
-        ├── successful-build.png
-        ├── linux-agent-stage.png
-        ├── docker-agent-stage.png
-        ├── stash-unstash-proof.png
-        ├── junit-results.png
-        ├── break-it-1.png
-        ├── break-it-2.png
-        └── break-it-3.png
+lab-3.3-multi-agent-pipeline/
+├── README.md                          # Main documentation
+├── Jenkinsfile                        # Pipeline definition
+├── break-it-exercises.md              # Break-it exercises documentation
+│
+├── tests/
+│   └── test_artifact.py               # Pytest validation
+│
+└── screenshots/
+    ├── 01-successful-build-artifacts-archived.png
+    ├── 02-successful-multi-agent-pipeline-build.png
+    ├── 03-linux-agent-build-stage-execution.png
+    ├── 04-docker-agent-validation-stage-execution.png
+    ├── 05-stash-artifact-on-linux-agent.png
+    ├── 06-unstash-artifact-on-docker-agent.png
+    ├── 07-junit-test-results-published.png
+    ├── 08-break-it-1-missing-stash-build-failure.png
+    ├── 09-break-it-1-stash-error-message.png
+    ├── 10-break-it-2-invalid-agent-label-queued.png
+    ├── 11-break-it-2-fixed-correct-label-success.png
+    └── 12-break-it-3-agent-any-controller-execution.png
 ```
 
 ---
 
-# 🔄 Pipeline Flow
+## 🔄 Pipeline Flow
 
 ```text
-Stage 1
-Linux Agent
+Stage 1: Build Artifact - Linux Agent
 │
 ├── Checkout Code
-├── Create Artifact
+├── Create Artifact (build/app.txt)
 └── Stash Artifact
-
           │
           ▼
-
-Stage 2
-Docker Agent
+Stage 2: Validate Artifact - Docker Agent
 │
 ├── Unstash Artifact
-├── Validate Artifact
-├── Run Pytest
+├── Validate Artifact Exists
+├── Install pytest
+├── Run Tests
 ├── Generate JUnit XML
-└── Stash Results
-
+└── Stash Test Results
           │
           ▼
-
-Stage 3
-Linux Agent
+Stage 3: Archive Results - Linux Agent
 │
-├── Unstash Results
-├── Archive Reports
-└── Publish Build Output
+├── Unstash Test Results
+├── Verify Results Received
+└── List Results Directory
+          │
+          ▼
+Post Actions (Linux Agent)
+│
+├── Publish JUnit Reports
+└── Archive Build Artifacts
 ```
 
 ---
 
-# 🏆 Final Jenkinsfile Used
+## 🏆 Final Working Jenkinsfile
 
 ```groovy
 pipeline {
@@ -224,7 +213,7 @@ pipeline {
 
     stages {
 
-        stage('Build - Linux Agent') {
+        stage('Build Artifact - Linux Agent') {
 
             agent {
                 label 'linux-agent'
@@ -245,12 +234,14 @@ pipeline {
                     cat build/app.txt
                 '''
 
-                stash name: 'build-artifact',
-                      includes: 'build/**'
+               stash(
+    			name: 'build-artifact',
+    			includes: 'build/**'
+		)
             }
         }
 
-        stage('Validate - Docker Agent') {
+        stage('Validate Artifact - Docker Agent') {
 
             agent {
                 docker {
@@ -266,40 +257,44 @@ pipeline {
                 sh '''
                     mkdir -p results
 
-                    pip install --user pytest
+                    echo "Docker Hostname: $(hostname)"
+                    echo "Docker User: $(whoami)"
+                    echo "Node Name: ${NODE_NAME}"
+
+                    pip install --target=/tmp/.local pytest
 
                     export PATH=/tmp/.local/bin:$PATH
+                    export PYTHONPATH=/tmp/.local:$PYTHONPATH
 
+                    echo "Build directory contents:"
                     ls -la build/
 
+                    echo "Artifact content:"
                     cat build/app.txt
                 '''
 
-                writeFile file: 'tests/test_artifact.py', text: '''
-from pathlib import Path
-
-def test_artifact_exists():
-    assert Path("build/app.txt").exists()
-
-def test_artifact_content():
-    content = Path("build/app.txt").read_text()
-    assert "Application Build Artifact" in content
-'''
-
                 sh '''
                     export PATH=/tmp/.local/bin:$PATH
+                    export PYTHONPATH=/tmp/.local:$PYTHONPATH
 
                     pytest tests/test_artifact.py \
-                    --junit-xml=results/test-results.xml \
-                    -v
+                      --junit-xml=results/test-results.xml \
+                      -v
                 '''
 
-                stash name: 'test-results',
-                      includes: 'results/**'
+                sh '''
+                    echo "JUnit files:"
+                    ls -la results/
+                '''
+
+                stash(
+                    name: 'test-results',
+                    includes: 'results/**'
+                )
             }
         }
 
-        stage('Archive - Linux Agent') {
+        stage('Archive Results - Linux Agent') {
 
             agent {
                 label 'linux-agent'
@@ -311,6 +306,7 @@ def test_artifact_content():
 
                 sh '''
                     echo "Results received from Docker Agent"
+
                     ls -la results/
                 '''
             }
@@ -321,12 +317,30 @@ def test_artifact_content():
 
         always {
 
-            junit 'results/test-results.xml'
+            node('linux-agent') {
 
-            archiveArtifacts(
-                artifacts: 'build/**',
-                fingerprint: true
-            )
+                script {
+
+                    try {
+                        unstash 'test-results'
+
+                        junit 'results/test-results.xml'
+                    } catch (Exception e) {
+                        echo "No test results to publish: ${e.message}"
+                    }
+
+                    try {
+                        unstash 'build-artifact'
+
+                        archiveArtifacts(
+                            artifacts: 'build/**',
+                            fingerprint: true
+                        )
+                    } catch (Exception e) {
+                        echo "No build artifacts to archive: ${e.message}"
+                    }
+                }
+            }
         }
 
         success {
@@ -342,156 +356,164 @@ def test_artifact_content():
 
 ---
 
-# 🔥 Key Features Implemented
+## 🔥 Key Features Implemented
 
-✅ Controller-safe execution with `agent none`
-
-✅ Linux static agent execution
-
-✅ Docker agent execution
-
-✅ Stage-level agent routing
-
-✅ Artifact transfer using stash
-
-✅ Artifact retrieval using unstash
-
-✅ Pytest validation
-
-✅ JUnit reporting
-
-✅ Build retention policy
-
-✅ Pipeline timeout protection
-
-✅ Distributed build architecture
+✅ Controller-safe execution with `agent none`  
+✅ Linux static agent execution  
+✅ Docker ephemeral agent execution  
+✅ Stage-level agent routing  
+✅ Artifact transfer using `stash`  
+✅ Artifact retrieval using `unstash`  
+✅ Pytest validation in Docker container  
+✅ JUnit test reporting  
+✅ Build artifact archival  
+✅ Build retention policy  
+✅ Pipeline timeout protection  
+✅ Distributed build architecture  
+✅ Error handling with try-catch blocks  
 
 ---
 
-# 💥 Break-It Exercises Completed
+## 📸 Build Execution Screenshots
+
+### Successful Multi-Agent Pipeline Build
+
+![Successful Build](screenshots/02-successful-multi-agent-pipeline-build.png)
+
+The pipeline successfully executed across two different agents with proper artifact transfer and test reporting.
 
 ---
 
-## ❌ Exercise 1 — Remove Stash
+### Stage 1: Linux Agent - Build Artifact
 
-### What I Changed
+![Linux Agent Stage](screenshots/03-linux-agent-build-stage-execution.png)
 
-```groovy
-stash name: 'build-artifact'
-```
-
-removed completely.
-
-### What Happened
-
-```text
-No such saved stash 'build-artifact'
-```
-
-### Key Learning
-
-Agents do not share workspaces automatically.
-
-Artifact transfer requires:
-
-```groovy
-stash
-unstash
-```
+The Linux agent creates the build artifact and displays system information to verify execution on the correct node.
 
 ---
 
-## ❌ Exercise 2 — Wrong Agent Label
+### Stage 2: Docker Agent - Validation
 
-### What I Changed
+![Docker Agent Stage](screenshots/04-docker-agent-validation-stage-execution.png)
 
-```groovy
-label 'linux-agent'
-```
-
-to
-
-```groovy
-label 'prod-linux'
-```
-
-### What Happened
-
-```text
-Still waiting to schedule task
-```
-
-Pipeline remained queued.
-
-### Key Learning
-
-Agent labels must match available nodes.
+The Docker agent runs pytest validation inside a Python 3.11 container, demonstrating ephemeral agent usage.
 
 ---
 
-## ❌ Exercise 3 — Remove agent none
+### Artifact Transfer: Stash on Linux Agent
 
-### What I Changed
+![Stash Artifact](screenshots/05-stash-artifact-on-linux-agent.png)
 
-```groovy
-agent none
-```
-
-to
-
-```groovy
-agent any
-```
-
-### What Happened
-
-Controller executor became eligible for pipeline execution.
-
-### Key Learning
-
-Controllers should orchestrate.
-
-Agents should execute.
+The `stash` command saves the build artifact to Jenkins internal storage for transfer to other agents.
 
 ---
 
-# 🧩 Problems Faced & Fixes
+### Artifact Transfer: Unstash on Docker Agent
 
-| Problem                          | Root Cause          | Fix                     |
-| -------------------------------- | ------------------- | ----------------------- |
-| Artifact missing in Docker stage | Workspace isolation | stash/unstash           |
-| Pipeline stuck in queue          | Incorrect label     | Corrected label         |
-| pytest not found                 | PATH issue          | Exported PATH           |
-| JUnit report missing             | Wrong report path   | Corrected file location |
-| Build executed unexpectedly      | Missing agent none  | Added agent none        |
+![Unstash Artifact](screenshots/06-unstash-artifact-on-docker-agent.png)
+
+The `unstash` command retrieves the artifact from Jenkins storage into the Docker agent's workspace.
 
 ---
 
-# 📊 Build Verification
+### JUnit Test Results
+
+![JUnit Results](screenshots/07-junit-test-results-published.png)
+
+Jenkins publishes the JUnit test results, showing test execution status and trends.
+
+---
+
+### Artifacts Archived
+
+![Artifacts](screenshots/01-successful-build-artifacts-archived.png)
+
+Build artifacts are archived and available for download with fingerprinting enabled.
+
+---
+
+## 💥 Break-It Exercises Completed
+
+I performed three break-it exercises to deeply understand multi-agent pipelines. Full documentation available in [break-it-exercises.md](break-it-exercises.md).
+
+---
+
+### ❌ Exercise 1 — Missing Stash
+
+**What I Changed:** Removed the `stash` step
+
+**What Happened:** `ERROR: No such saved stash 'build-artifact'`
+
+![Missing Stash Failure](screenshots/08-break-it-1-missing-stash-build-failure.png)
+
+![Missing Stash Error](screenshots/09-break-it-1-stash-error-message.png)
+
+**Key Learning:** Agents do not share workspaces automatically. Artifact transfer requires `stash`/`unstash`.
+
+---
+
+### ❌ Exercise 2 — Wrong Agent Label
+
+**What I Changed:** Changed `label 'linux-agent'` to `label 'invalid-agent'`
+
+**What Happened:** Pipeline remained queued indefinitely
+
+![Invalid Label Queued](screenshots/10-break-it-2-invalid-agent-label-queued.png)
+
+![Fixed with Correct Label](screenshots/11-break-it-2-fixed-correct-label-success.png)
+
+**Key Learning:** Agent labels must match available nodes. Incorrect labels cause pipeline starvation.
+
+---
+
+### ❌ Exercise 3 — Agent Any vs Agent None
+
+**What I Changed:** Changed `agent none` to `agent any`
+
+**What Happened:** Pipeline allocated a global workspace unnecessarily, potentially executing on Controller
+
+![Agent Any Execution](screenshots/12-break-it-3-agent-any-controller-execution.png)
+
+**Key Learning:** Use `agent none` to prevent Controller execution and enforce explicit agent assignment per stage.
+
+---
+
+## 🧩 Problems Faced & Solutions
+
+| Problem | Root Cause | Solution |
+|---------|------------|----------|
+| Artifact missing in Docker stage | Workspace isolation between agents | Implemented `stash`/`unstash` |
+| Pipeline stuck in queue | Incorrect agent label | Corrected label to match available node |
+| pytest not found in PATH | Docker container PATH configuration | Exported PATH with pip install location |
+| JUnit report not published | Wrong file path in post section | Corrected path to `results/test-results.xml` |
+| Build executed on Controller | Used `agent any` instead of `agent none` | Changed to `agent none` at pipeline level |
+| Post section failed without workspace | No workspace available in post block | Wrapped post actions in `node('linux-agent')` |
+
+---
+
+## 📊 Build Verification Checklist
 
 Successfully verified:
 
-✅ Linux Agent execution
-
-✅ Docker Agent execution
-
-✅ Artifact creation
-
-✅ Artifact transfer
-
-✅ Workspace isolation
-
-✅ Pytest execution
-
-✅ JUnit reporting
-
-✅ Multi-agent scheduling
+✅ Linux Agent execution  
+✅ Docker Agent execution  
+✅ Artifact creation (`build/app.txt`)  
+✅ Artifact stashing on Linux Agent  
+✅ Artifact unstashing on Docker Agent  
+✅ Workspace isolation validation  
+✅ Pytest execution in Docker  
+✅ JUnit XML generation  
+✅ Test results transfer  
+✅ JUnit report publishing  
+✅ Artifact archival  
+✅ Multi-agent scheduling  
+✅ Controller-safe execution with `agent none`  
 
 ---
 
-# 🎤 Interview Talking Points
+## 🎤 Interview Talking Points
 
-## 🔹 Why Use agent none?
+### 🔹 Why Use `agent none`?
 
 Using:
 
@@ -501,118 +523,197 @@ agent none
 
 prevents accidental controller execution.
 
-Benefits:
-
+**Benefits:**
 * Better scalability
-* Better security
+* Enhanced security
 * Explicit agent assignment
 * Production best practice
+* Resource optimization
+
+**Without `agent none`:**
+- Controller might execute build workload
+- Wasted executor slots
+- Security risk
+- Poor scalability
 
 ---
 
-## 🔹 What Problem Does stash/unstash Solve?
+### 🔹 What Problem Does stash/unstash Solve?
 
-Different agents have different workspaces.
+Different agents have different workspaces on different machines/containers.
 
 Files do not automatically move between them.
 
-`stash` and `unstash` allow Jenkins to transfer files between stages running on different agents.
+**Real-World Analogy:**
+- Agents = Different computers
+- Workspaces = Different hard drives
+- stash/unstash = File transfer system
+
+**Example:**
+
+```groovy
+// Linux Agent
+sh 'echo "data" > file.txt'
+stash name: 'myfile', includes: 'file.txt'
+
+// Docker Agent (different machine)
+unstash 'myfile'  // Now file.txt is available here
+sh 'cat file.txt'
+```
 
 ---
 
-## 🔹 Why Use Different Agents For Different Stages?
+### 🔹 Why Use Different Agents For Different Stages?
 
 Different stages may require:
 
-* Different operating systems
-* Different runtimes
-* Different tools
-* Different resource requirements
+* **Different operating systems** (Linux vs Windows)
+* **Different runtimes** (Java 8 vs Java 17)
+* **Different tools** (Maven vs Gradle)
+* **Different resource requirements** (CPU-intensive vs memory-intensive)
+* **Ephemeral environments** (Docker containers for testing)
+* **Specialized hardware** (GPU for ML, specific OS for builds)
 
-Distributed execution improves scalability and efficiency.
+**Benefits:**
+- Better resource utilization
+- Isolated environments
+- Improved security
+- Faster execution (parallel stages on different agents)
 
 ---
 
-## 🔹 What Happens If No Agent Matches A Label?
+### 🔹 What Happens If No Agent Matches A Label?
 
 Jenkins cannot schedule the build.
 
-Pipeline remains queued until a matching node becomes available.
+Pipeline remains queued until:
+- A matching node becomes available, OR
+- Pipeline times out, OR
+- Build is manually aborted
+
+**How to Debug:**
+1. Check available agents: Manage Jenkins → Nodes
+2. Verify agent labels
+3. Check if agents are online
+4. Review agent capacity (executors available)
 
 ---
 
-## 🔹 Why Is This Important In Real DevOps?
+### 🔹 Why Is This Important In Real DevOps?
 
 This architecture is commonly used in:
 
-* Enterprise Jenkins installations
-* Kubernetes Jenkins agents
-* GitHub Actions runners
-* GitLab runners
-* Cloud-native CI/CD platforms
+* **Enterprise Jenkins installations** - Hundreds of pipelines, dedicated agents for different teams
+* **Kubernetes Jenkins agents** - Dynamic pod creation for builds
+* **Cloud-native CI/CD** - On-demand agent provisioning
+* **GitHub Actions runners** - Self-hosted vs GitHub-hosted
+* **GitLab runners** - Shared vs specific runners
+
+**Real Example:**
+
+```text
+Company Pipeline:
+├── Linux Agent → Backend builds (Java/Maven)
+├── Windows Agent → .NET builds
+├── Mac Agent → iOS builds
+├── Docker Agent → Integration tests
+└── GPU Agent → ML model training
+```
 
 ---
 
-# 📚 Key Learnings
+## 📚 Key Learnings
 
 This lab helped me understand:
 
-* Distributed build execution
-* Agent scheduling
-* Workspace isolation
-* Artifact movement between agents
-* Controller best practices
-* Stage-level execution environments
-* Enterprise Jenkins architecture
+* **Distributed build execution** - How to distribute work across multiple agents
+* **Agent scheduling** - How Jenkins matches work to available nodes
+* **Workspace isolation** - Why files don't automatically transfer between agents
+* **Artifact movement** - How to transfer files using stash/unstash
+* **Controller best practices** - Why controllers should orchestrate, not execute
+* **Stage-level execution environments** - How to use different agents per stage
+* **Enterprise Jenkins architecture** - How large organizations structure CI/CD
 
 ---
 
-# 🚀 Biggest Takeaway
+## 🚀 Biggest Takeaway
 
-> A Jenkins Controller should coordinate builds.
+> **A Jenkins Controller should coordinate builds.**
 >
-> Jenkins Agents should execute builds.
+> **Jenkins Agents should execute builds.**
 >
 > Multi-agent pipelines allow the right work to run in the right environment while keeping the controller lightweight, secure, and scalable.
 
----
-
-# 📋 Lab Completion Checklist
-
-## Setup
-
-* [x] Linux agent available
-* [x] Docker agent configured
-* [x] agent none configured
-
-## Pipeline
-
-* [x] Stage-level agents configured
-* [x] stash implemented
-* [x] unstash implemented
-* [x] pytest integrated
-* [x] JUnit reporting enabled
-
-## Validation
-
-* [x] Build artifact created
-* [x] Artifact transferred
-* [x] Tests executed
-* [x] Reports published
-
-## Break-It Exercises
-
-* [x] Missing stash tested
-* [x] Wrong label tested
-* [x] agent none validation completed
+This is the foundation of enterprise-grade Jenkins architecture.
 
 ---
 
-# ✍️ Author
+## 📋 Lab Completion Checklist
 
-**Himanshu Kumar** - Learning DevOps by building, breaking, documenting, and sharing 🚀
+### Setup
+- [x] Linux agent configured and online
+- [x] Docker available on agent
+- [x] Agent labels properly set
+- [x] `agent none` configured at pipeline level
+
+### Pipeline Implementation
+- [x] Stage-level agents configured
+- [x] `stash` implemented for artifact transfer
+- [x] `unstash` implemented for artifact retrieval
+- [x] pytest integrated in Docker container
+- [x] JUnit reporting enabled
+- [x] Artifact archival configured
+- [x] Error handling with try-catch
+
+### Validation
+- [x] Build artifact created successfully
+- [x] Artifact transferred between agents
+- [x] Tests executed in Docker
+- [x] Reports published correctly
+- [x] Screenshots captured for all stages
+
+### Break-It Exercises
+- [x] Exercise 1: Missing stash tested and documented
+- [x] Exercise 2: Wrong agent label tested and documented
+- [x] Exercise 3: `agent none` validation completed and documented
 
 ---
 
-🔥 *This lab demonstrates one of the most important concepts in Jenkins: distributed build execution using multiple agents.*
+## 🔗 Related Labs
+
+- **Lab 3.1** - Static Jenkins Agent Setup
+- **Lab 3.2** - Docker Jenkins Agent Configuration
+- **Lab 3.4** - Parallel Multi-Agent Execution (if applicable)
+
+---
+
+## 📖 Additional Resources
+
+- [Jenkins Pipeline Syntax](https://www.jenkins.io/doc/book/pipeline/syntax/)
+- [Using Multiple Agents](https://www.jenkins.io/doc/book/pipeline/syntax/#agent)
+- [Stash and Unstash](https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build)
+- [Docker Pipeline Plugin](https://www.jenkins.io/doc/book/pipeline/docker/)
+- [Distributed Builds](https://www.jenkins.io/doc/book/scaling/architecting-for-scale/)
+
+---
+
+## ✍️ Author
+
+**Himanshu Kumar**
+
+DevOps Engineer | Learning Through Building, Breaking, and Documenting
+
+**Learning Philosophy:** "Break it to understand it, document it to master it, share it to grow together."
+
+---
+
+## 🏷️ Tags
+
+`jenkins` `multi-agent` `distributed-builds` `docker` `linux-agent` `stash-unstash` `ci-cd` `devops` `pipeline-as-code` `pytest` `junit` `jenkins-controller` `agent-orchestration` `workspace-isolation` `build-automation`
+
+---
+
+🔥 **This lab demonstrates one of the most important concepts in Jenkins: distributed build execution using multiple agents to create scalable, maintainable, and efficient CI/CD pipelines.**
+
+---
 
