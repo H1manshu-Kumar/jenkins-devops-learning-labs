@@ -12,7 +12,7 @@ pipeline {
         stage('Build Artifact - Linux Agent') {
 
             agent {
-                label 'invalid-agent'
+                label 'linux-agent'
             }
 
             steps {
@@ -93,7 +93,7 @@ pipeline {
         stage('Archive Results - Linux Agent') {
 
             agent {
-                label 'invalid-agent'
+                label 'linux-agent'
             }
 
             steps {
