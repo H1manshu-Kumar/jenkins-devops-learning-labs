@@ -30,10 +30,10 @@ pipeline {
                     cat build/app.txt
                 '''
 
-                stash(
-                    name: 'build-artifact',
-                    includes: 'build/**'
-                )
+               stash(
+    			name: 'build-artifact',
+    			includes: 'build/**'
+		)
             }
         }
 
