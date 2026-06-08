@@ -20,6 +20,15 @@ pipeline {
                 echo 'Running Tests'
             }
         }
+
+        stage('Deploy Production') {
+            when {
+                branch 'master'
+            }
+            steps {
+                echo 'Deploying to Production'
+            }
+        }
     }
 
     post {
