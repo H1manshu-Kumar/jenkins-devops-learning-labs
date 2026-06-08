@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Branch Info') {
+            steps {
+                echo "Branch Name: ${env.BRANCH_NAME}"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Running Build'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running Tests'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline completed for ${env.BRANCH_NAME}"
+        }
+    }
+}
