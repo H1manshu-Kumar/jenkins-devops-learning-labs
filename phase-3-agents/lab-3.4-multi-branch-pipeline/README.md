@@ -69,7 +69,7 @@ Developer Push
  ┌────┼────────────────────┐
  │    │                    │
  ▼    ▼                    ▼
-main feature-login   feature-payment
+master feature-login   feature-payment
  │         │                │
  ▼         ▼                ▼
 CI/CD    CI/CD           CI/CD
@@ -126,7 +126,7 @@ Commit:
 ```bash
 git add .
 git commit -m "Add lab 3.4 structure"
-git push origin main
+git push origin master
 ```
 
 ---
@@ -224,26 +224,26 @@ Scan Multibranch Pipeline Now
 Expected:
 
 ```text
-main discovered
+master discovered
 ```
 
 Jenkins automatically creates:
 
 ```text
 lab-3.4-multibranch
-└── main
+└── master
 ```
 
 ---
 
-# Step 6 – Verify Main Branch
+# Step 6 – Verify Master Branch
 
-Build the main branch.
+Build the master  branch.
 
 Expected output:
 
 ```text
-Current Branch: main
+Current Branch: master
 Building application
 Executing tests
 ```
@@ -287,14 +287,14 @@ Scan Multibranch Pipeline Now
 Expected:
 
 ```text
-main discovered
+master discovered
 feature-login discovered
 ```
 
 Jenkins automatically creates:
 
 ```text
-main
+master
 feature-login
 ```
 
@@ -319,7 +319,7 @@ echo "${env.BRANCH_NAME}"
 Possible output:
 
 ```text
-main
+master
 feature-login
 feature-payment
 bugfix-header
@@ -329,13 +329,13 @@ bugfix-header
 
 # Production Branch Controls
 
-Restrict deployments to production only from main.
+Restrict deployments to production only from master.
 
 ```groovy
 stage('Deploy Production') {
 
     when {
-        branch 'main'
+        branch 'master'
     }
 
     steps {
@@ -356,7 +356,7 @@ Benefits:
 
 | Branch | Environment |
 |----------|-------------|
-| main | Production |
+| master | Production |
 | develop | QA |
 | release/* | Staging |
 | feature/* | Temporary Test Environment |
@@ -397,13 +397,13 @@ Restore Jenkinsfile and push again.
 Change:
 
 ```groovy
-branch 'main'
+branch 'master'
 ```
 
 To:
 
 ```groovy
-branch 'master'
+branch 'main'
 ```
 
 ### Expected Result
@@ -463,11 +463,11 @@ An environment variable automatically populated by Jenkins containing the curren
 
 ---
 
-## How do you deploy only from main?
+## How do you deploy only from master?
 
 ```groovy
 when {
-    branch 'main'
+    branch 'master'
 }
 ```
 
