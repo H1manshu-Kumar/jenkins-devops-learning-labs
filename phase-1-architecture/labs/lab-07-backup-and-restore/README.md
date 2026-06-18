@@ -147,7 +147,7 @@ Verify:
 - Jenkins durability depends entirely on:
 - Jenkins Home persistence.
 - If Jenkins Home is lost:
-- Everything is lost.
+- Everything is lost and cannot br restored
 
 ---
 
