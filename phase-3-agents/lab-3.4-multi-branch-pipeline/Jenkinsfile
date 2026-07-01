@@ -35,5 +35,5 @@ pipeline {
         always {
             echo "Pipeline completed for ${env.BRANCH_NAME}"
         }
-    
+    }
 }
