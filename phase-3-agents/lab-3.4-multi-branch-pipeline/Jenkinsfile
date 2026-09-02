@@ -11,13 +11,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Running Build'
+                echo 'Running Build!!'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running Tests'
+                echo 'Running Tests!!'
             }
         }
 
@@ -26,7 +26,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                echo 'Deploying to Production'
+                echo 'Deploying to Production!!'
             }
         }
     }
